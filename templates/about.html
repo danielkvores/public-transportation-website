@@ -1,0 +1,77 @@
+{% extends "base.html" %} {% block title %}About & Sources — The Price of
+Breathing{% endblock %} {% block content %}
+
+<section class="section section--about">
+    <h1>About This Project</h1>
+
+    <h2>Purpose</h2>
+    <p>
+        This website investigates the unequal distribution of air pollution and
+        its health consequences across Europe. Its central argument is that
+        where you live — and how wealthy your region is — determines the air you
+        breathe and the years it costs you.
+    </p>
+    <p>
+        Using publicly available data from European and international
+        institutions, the site shows that Europe's poorest regions bear a
+        disproportionate pollution burden, driven by solid fuel heating, ageing
+        vehicle fleets, and industrial concentration. While the assingment does
+        suggest using multiple pages, I've opted to keep the majority of the
+        information one a single page. I think it's easier to tell a "story" to
+        the user; they are progressing by scrolling and they don't get taken out
+        of the flow
+    </p>
+
+    <h2>Data Sources</h2>
+    <p>
+        The project will probably draw on three primary datasets, linked through
+        a relational database on country and regional (NUTS3) identifiers and
+        year:
+    </p>
+    <ul>
+        <li>
+            <strong>EEA Air Quality Health Risk Assessments</strong> — PM<sub
+                >2.5</sub
+            >
+            concentrations, premature deaths, and years of life lost at country
+            and NUTS3 level across 41 European countries (2005–2023). Source:
+            European Environment Agency.
+        </li>
+        <li>
+            <strong>Eurostat Regional GDP</strong> — GDP per capita at
+            purchasing power standard at NUTS3 level, used to classify regions
+            by wealth quintile. Source: Eurostat.
+        </li>
+        <li>
+            <strong>World Bank Development Indicators</strong> — Industry value
+            added (% of GDP), urbanisation rates, fossil fuel consumption, and
+            population data at country level. Source: World Bank WDI.
+        </li>
+    </ul>
+
+    <h2>Design Rationale</h2>
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.
+        Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies
+        sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius
+        as, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy
+        molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.
+        Duis semper. Duis arcu massa, scelerisque vitae, consequat in, Praesent
+        blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.
+    </p>
+
+    <h2>Methodology</h2>
+    <p>
+        [ To be completed in Stages II and III: description of data cleaning,
+        database design, visualisation choices, and user-tracking
+        implementation. ]
+    </p>
+
+    <h2>AI Disclosure</h2>
+    <p>
+        [ To be completed with final submission: disclosure of AI tools used,
+        their purpose, extent of reliance, and confirmation of responsibility. ]
+    </p>
+</section>
+
+{% endblock %}

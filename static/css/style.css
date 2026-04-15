@@ -1,0 +1,141 @@
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: #1a1a1a;
+    background-color: #f9f7f4;
+    line-height: 1.7;
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: rgba(249, 247, 244, 0.95);
+    border-bottom: 1px solid #ddd;
+    z-index: 100;
+}
+
+nav a {
+    text-decoration: none;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+}
+
+.nav-brand {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.section {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 6rem 2rem 4rem;
+}
+
+.section--hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    max-width: 800px;
+}
+
+.section--hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    color: #8b2500;
+}
+
+.hero-stat {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.hero-stat strong {
+    color: #8b2500;
+}
+
+.hero-sub {
+    font-size: 1.1rem;
+    color: #555;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.scroll-cue {
+    font-size: 0.9rem;
+    color: #999;
+    margin-top: 3rem;
+}
+
+.section--map h2,
+.section--divide h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #8b2500;
+}
+
+.map-placeholder,
+.chart-placeholder {
+    background-color: #e8e4df;
+    border: 2px dashed #bbb;
+    border-radius: 4px;
+    padding: 4rem 2rem;
+    text-align: center;
+    margin: 2rem 0;
+    color: #888;
+    font-style: italic;
+}
+
+.section--about h1 {
+    font-size: 2.4rem;
+    margin-bottom: 2rem;
+    color: #8b2500;
+}
+
+.section--about h2 {
+    font-size: 1.4rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+}
+
+.section--about ul {
+    margin: 1rem 0 1rem 1.5rem;
+}
+
+.section--about li {
+    margin-bottom: 0.75rem;
+}
+
+.section p {
+    margin-bottom: 1rem;
+}
+
+footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid #ddd;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+footer p {
+    margin-bottom: 0.25rem;
+}
