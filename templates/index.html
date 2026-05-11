@@ -1,61 +1,133 @@
-{% extends "base.html" %} {% block title %}The Price of Breathing{% endblock %}
-{% block content %}
+{% extends "base.html" %} {% block title %}The 15-Minute Divide — Public
+Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
 
-<section id="hero" class="section section--hero">
-    <h1>The Price of Breathing</h1>
-    <p class="hero-stat">
-        Over <strong>180,000</strong> Europeans die prematurely each year from
-        air they had no choice but to breathe.
-    </p>
-    <p class="hero-sub">
-        Yes, the text on the website is AI. I just wanted to fill it with
-        somewhat revelant text to see what the layout could look like. Although,
-        to be honest I am not even sure if I want to follow with this "design
-        language."
-    </p>
-    <p class="scroll-cue">↓ Scroll to explore the data</p>
-</section>
-
-<section id="map" class="section section--map">
-    <h2>The Air We Breathe</h2>
-    <p>
-        The map below shows the concentration of fine particulate matter
-        (PM<sub>2.5</sub>) — the most harmful common air pollutant — across
-        European regions. Darker areas indicate higher pollution levels and a
-        greater risk of premature death.
-    </p>
-
-    <div class="map-placeholder">
-        <p>[ Interactive map will be rendered here in Stage II ]</p>
+<!-- ── Hero ─────────────────────────────────────────────────────── -->
+<section class="hero">
+    <div class="hero__inner">
+        <h1 class="hero__headline">The 15-Minute<br />Divide</h1>
+        <p class="hero__sub">
+            Where you live in Europe determines how long you live, how far you
+            go in school, and whether you find work — and public transport is
+            the thread that connects it all.
+        </p>
+        <div class="hero__stats">
+            <div class="stat-card">
+                <span class="stat-card__number">{{ stats.n_regions }}</span>
+                <span class="stat-card__label">EU NUTS-2 regions analysed</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card__number">{{ stats.emp_range }}pp</span>
+                <span class="stat-card__label"
+                    >employment-rate gap between regions</span
+                >
+            </div>
+            <div class="stat-card">
+                <span class="stat-card__number">{{ stats.le_range }} yrs</span>
+                <span class="stat-card__label"
+                    >life-expectancy gap across the EU</span
+                >
+            </div>
+        </div>
+        <a href="{{ url_for('data') }}" class="btn btn--primary"
+            >Explore the data →</a
+        >
     </div>
-
-    <p>
-        Notice the pattern: southern and eastern Europe — particularly the Po
-        Valley in Italy, industrial Poland, Bulgaria, and the Balkans — carry
-        the heaviest burden.
-    </p>
 </section>
 
-<section id="divide" class="section section--divide">
-    <h2>The Divide</h2>
-    <p>
-        Air pollution in Europe is not just an environmental issue — it is a
-        question of inequality. The poorest regions of the EU are exposed to
-        significantly higher levels of PM<sub>2.5</sub>
-        than the wealthiest, and they suffer more deaths as a result.
-    </p>
+<!-- ── Narrative ─────────────────────────────────────────────────── -->
+<article class="narrative">
+    <section class="narrative__section">
+        <div class="narrative__text">
+            <span class="narrative__label">The Thesis</span>
+            <h2>
+                Distance from the city is not just a coordinate. It is a
+                destiny.
+            </h2>
+            <p>
+                Across the European Union, regions classified as "predominantly
+                rural" consistently report lower employment, shorter lives, and
+                fewer university graduates than their urban counterparts. These
+                gaps are not random — they follow the routes of railways and
+                motorways, or rather, the absence of them.
+            </p>
+            <p>
+                The <strong>15-minute city</strong> — a planning concept
+                promising every amenity within a quarter-hour's walk or cycle —
+                has become a touchstone of progressive urbanism. But for
+                hundreds of millions of Europeans, the nearest hospital, job
+                centre, or university is not 15 minutes away. It is a car
+                journey that many cannot afford, or a bus that runs twice a day.
+            </p>
+        </div>
+    </section>
 
-    <div class="chart-placeholder">
-        <p>[ Comparative visualisations will be rendered here in Stage II ]</p>
-    </div>
+    <section class="narrative__section narrative__section--highlight">
+        <div class="narrative__text">
+            <span class="narrative__label">The Evidence</span>
+            <h2>Transport infrastructure and life outcomes move together.</h2>
+            <p>
+                Using eight Eurostat datasets covering {{ stats.n_regions }}
+                NUTS-2 regions across all 27 EU member states, this project maps
+                four outcome domains —
+                <strong>employment, education, health,</strong> and
+                <strong>transport connectivity</strong> — and shows how they
+                co-vary with the urban-rural classification of each region.
+            </p>
+            <p>
+                The pattern is stark. Regions with higher railway and motorway
+                density cluster at the top of every outcome ranking. The
+                correlation is not merely about wealth: even within countries,
+                better-connected regions outperform their more isolated
+                neighbours on every indicator.
+            </p>
+        </div>
+        <div class="narrative__pullquote">
+            <blockquote>
+                "A region without trains is a region without a future."
+                <cite>— Paraphrasing the 2023 Eurostat Regional Yearbook</cite>
+            </blockquote>
+        </div>
+    </section>
 
-    <p>
-        The causes are structural: reliance on solid fuels for heating, older
-        and more polluting vehicle fleets, industrial concentration, and lower
-        investment in environmental regulation. The people producing Europe's
-        goods and heating their homes with coal are breathing the worst air on
-        the continent.
-    </p>
-</section>
+    <section class="narrative__section">
+        <div class="narrative__text">
+            <span class="narrative__label">The Stakes</span>
+            <h2>Cohesion funding alone cannot bridge the divide.</h2>
+            <p>
+                The EU spends over €350 billion per programming period on
+                cohesion policy, much of it on infrastructure. Yet the
+                urban-rural gap persists, and in some indicators is widening.
+                The question this project poses is not whether money is being
+                spent, but whether the right connections are being built — and
+                whether the regions that most need them are receiving them.
+            </p>
+            <p>
+                The data pages that follow do not prescribe solutions. They tell
+                you what the numbers say: that where you can go in 15 minutes
+                shapes almost everything else about your life.
+            </p>
+        </div>
+    </section>
+
+    <section class="narrative__section narrative__section--cta">
+        <div class="narrative__text narrative__text--center">
+            <h2>See the patterns for yourself.</h2>
+            <p>
+                Explore the visualisations below — by typology, by transport
+                indicator, and by country — and draw your own conclusions.
+            </p>
+            <div class="cta-group">
+                <a href="{{ url_for('data') }}" class="btn btn--primary"
+                    >Explore the data</a
+                >
+                <a
+                    href="{{ url_for('methodology') }}"
+                    class="btn btn--secondary"
+                    >How we built this</a
+                >
+            </div>
+        </div>
+    </section>
+</article>
 
 {% endblock %}

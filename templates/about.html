@@ -1,77 +1,79 @@
-{% extends "base.html" %} {% block title %}About & Sources — The Price of
-Breathing{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% block title %}About — The 15-Minute Divide{% endblock %}
 
-<section class="section section--about">
-    <h1>About This Project</h1>
+{% block content %}
 
-    <h2>Purpose</h2>
-    <p>
-        This website investigates the unequal distribution of air pollution and
-        its health consequences across Europe. Its central argument is that
-        where you live — and how wealthy your region is — determines the air you
-        breathe and the years it costs you.
-    </p>
-    <p>
-        Using publicly available data from European and international
-        institutions, the site shows that Europe's poorest regions bear a
-        disproportionate pollution burden, driven by solid fuel heating, ageing
-        vehicle fleets, and industrial concentration. While the assingment does
-        suggest using multiple pages, I've opted to keep the majority of the
-        information one a single page. I think it's easier to tell a "story" to
-        the user; they are progressing by scrolling and they don't get taken out
-        of the flow
-    </p>
+<div class="page-header">
+    <div class="page-header__inner">
+        <h1 class="page-header__title">About this project</h1>
+        <p class="page-header__sub">
+            Stage II of a data engineering assignment — University of Amsterdam, 2026.
+        </p>
+    </div>
+</div>
 
-    <h2>Data Sources</h2>
-    <p>
-        The project will probably draw on three primary datasets, linked through
-        a relational database on country and regional (NUTS3) identifiers and
-        year:
-    </p>
-    <ul>
-        <li>
-            <strong>EEA Air Quality Health Risk Assessments</strong> — PM<sub
-                >2.5</sub
-            >
-            concentrations, premature deaths, and years of life lost at country
-            and NUTS3 level across 41 European countries (2005–2023). Source:
-            European Environment Agency.
-        </li>
-        <li>
-            <strong>Eurostat Regional GDP</strong> — GDP per capita at
-            purchasing power standard at NUTS3 level, used to classify regions
-            by wealth quintile. Source: Eurostat.
-        </li>
-        <li>
-            <strong>World Bank Development Indicators</strong> — Industry value
-            added (% of GDP), urbanisation rates, fossil fuel consumption, and
-            population data at country level. Source: World Bank WDI.
-        </li>
-    </ul>
+<div class="prose-layout">
 
-    <h2>Design Rationale</h2>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.
-        Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies
-        sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius
-        as, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy
-        molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.
-        Duis semper. Duis arcu massa, scelerisque vitae, consequat in, Praesent
-        blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.
-    </p>
+    <section class="prose-section">
+        <h2>The argument</h2>
+        <p>
+            <em>The 15-Minute Divide</em> argues that public transport is the great equaliser
+            across the EU — or, more precisely, that its absence is the great divider.
+            Regions that sit further from urban centres and major transport corridors
+            systematically underperform on employment, health, and educational attainment.
+        </p>
+        <p>
+            The thesis is not that rural life is inherently worse, but that structural
+            under-investment in connectivity has created a compounding disadvantage for
+            peripheral regions. A region without good public transport cannot attract
+            firms, retain young graduates, or ensure that residents can reach hospitals
+            and job centres efficiently.
+        </p>
+    </section>
 
-    <h2>Methodology</h2>
-    <p>
-        [ To be completed in Stages II and III: description of data cleaning,
-        database design, visualisation choices, and user-tracking
-        implementation. ]
-    </p>
+    <section class="prose-section">
+        <h2>Design decisions</h2>
+        <p>
+            The site is intentionally structured as a data journalism piece rather than
+            an academic report. The landing page makes the argument in plain language;
+            the data page proves it with charts; the methodology page explains how the
+            evidence was gathered and what its limits are.
+        </p>
+        <p>
+            Visualisations use <strong>Chart.js</strong> (CDN, no build step), fed by
+            JSON API endpoints from the Flask backend. All data is queried live from the
+            SQLite database — nothing is hardcoded into HTML.
+        </p>
+        <p>
+            The colour palette uses blue for urban regions, teal for intermediate, and
+            amber for rural — consistent across all charts so the reader builds an
+            intuitive association between colour and classification.
+        </p>
+    </section>
 
-    <h2>AI Disclosure</h2>
-    <p>
-        [ To be completed with final submission: disclosure of AI tools used,
-        their purpose, extent of reliance, and confirmation of responsibility. ]
-    </p>
-</section>
+    <section class="prose-section">
+        <h2>Technical stack</h2>
+        <ul class="prose-list">
+            <li><strong>Backend:</strong> Python 3.13, Flask 3.x, SQLite3 (raw, no ORM)</li>
+            <li><strong>Data pipeline:</strong> pandas 3.x for cleaning; parameterised
+                <code>executemany</code> for insertion</li>
+            <li><strong>Frontend:</strong> Vanilla HTML/CSS, Chart.js 4.x (CDN),
+                no JavaScript frameworks</li>
+            <li><strong>Data:</strong> Eurostat SDMX-CSV 2.0 (8 datasets, gzipped)</li>
+            <li><strong>Database:</strong> SQLite, 7 tables, foreign-key constraints</li>
+        </ul>
+    </section>
+
+    <section class="prose-section">
+        <h2>Scope</h2>
+        <p>
+            This is a student assignment (Stage II of three). The data covers all
+            27 EU member states at NUTS-2 regional level. Candidate countries
+            (e.g. Serbia, Ukraine) and UK post-Brexit data are excluded.
+            Greece uses the Eurostat country prefix "EL", not "GR".
+        </p>
+    </section>
+
+</div>
 
 {% endblock %}

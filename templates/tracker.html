@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Tracking Dashboard — The 15-Minute Divide{% endblock %}
+
+{% block head %}
+<style>
+    /* Local styles — this is an internal admin view, kept out of style.css */
+    .tracker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+    .tracker-stat {
+        background: var(--clr-bg-soft);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+    }
+    .tracker-stat__num {
+        display: block;
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--clr-text);
+        line-height: 1;
+        letter-spacing: -.02em;
+    }
+    .tracker-stat__label {
+        display: block;
+        margin-top: .35rem;
+        font-size: .78rem;
+        color: var(--clr-muted);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+    .tracker-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2.5rem;
+        font-size: .92rem;
+    }
+    .tracker-table th,
+    .tracker-table td {
+        text-align: left;
+        padding: .55rem .75rem;
+        border-bottom: 1px solid var(--clr-border);
+    }
+    .tracker-table th {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--clr-muted);
+        background: var(--clr-bg-soft);
+    }
+    .tracker-table td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+    .tracker-table tbody tr:hover { background: var(--clr-bg-soft); }
+    .tracker-empty {
+        padding: 1rem 1.25rem;
+        font-style: italic;
+        color: var(--clr-muted);
+        background: var(--clr-bg-soft);
+        border: 1px dashed var(--clr-border);
+        border-radius: var(--radius);
+        margin-bottom: 2.5rem;
+    }
+    .tracker-section-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: .75rem;
+        color: var(--clr-text);
+    }
+    .tracker-pill {
+        display: inline-block;
+        padding: .15rem .55rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 600;
+        background: #eef5ff;
+        color: var(--clr-blue);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header__inner">
+        <h1 class="page-header__title">Tracking Dashboard</h1>
+        <p class="page-header__sub">
+            Custom Python/SQLite analytics. No third-party scripts; all data
+            stays in <code>the_15_minute_divide.db</code>.
+        </p>
+    </div>
+</div>
+
+<div class="prose-layout">
+
+    <!-- ── Headline numbers ───────────────────────────────────────── -->
+    <div class="tracker-grid">
+        <div class="tracker-stat">
+            <span class="tracker-stat__num">{{ n_sessions }}</span>
+            <span class="tracker-stat__label">Unique sessions</span>
+        </div>
+        <div class="tracker-stat">
+            <span class="tracker-stat__num">{{ n_pageviews }}</span>
+            <span class="tracker-stat__label">Total page views</span>
+        </div>
+        <div class="tracker-stat">
+            <span class="tracker-stat__num">{{ bounce_pct }}%</span>
+            <span class="tracker-stat__label">Bounce rate (1-page sessions)</span>
+        </div>
+    </div>
+
+    <!-- ── Page-level table ───────────────────────────────────────── -->
+    <h2 class="tracker-section-title">Pages</h2>
+    {% if by_page %}
+    <table class="tracker-table">
+        <thead>
+            <tr>
+                <th>Path</th>
+                <th class="num">Views</th>
+                <th class="num">Avg time (s)</th>
+                <th class="num">w/ duration</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in by_page %}
+            <tr>
+                <td><code>{{ row.path }}</code></td>
+                <td class="num">{{ row.views }}</td>
+                <td class="num">{{ row.avg_seconds if row.avg_seconds is not none else '—' }}</td>
+                <td class="num">{{ row.n_with_duration }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="tracker-empty">No page views logged yet.</div>
+    {% endif %}
+
+    <!-- ── Country selections ─────────────────────────────────────── -->
+    <h2 class="tracker-section-title">Most-selected countries (Data page)</h2>
+    {% if countries %}
+    <table class="tracker-table">
+        <thead>
+            <tr>
+                <th>Country</th>
+                <th class="num">Selections</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in countries %}
+            <tr>
+                <td>{{ row.country }}</td>
+                <td class="num">{{ row.n }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="tracker-empty">
+        No country selections yet — open the
+        <a href="{{ url_for('data') }}">Data Explorer</a> and pick one.
+    </div>
+    {% endif %}
+
+    <!-- ── Metric / chart-tab use ─────────────────────────────────── -->
+    <h2 class="tracker-section-title">Metric &amp; chart-tab interactions</h2>
+    {% if metric_use %}
+    <table class="tracker-table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Metric</th>
+                <th>Page</th>
+                <th class="num">Clicks</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in metric_use %}
+            <tr>
+                <td><span class="tracker-pill">{{ row.event_type }}</span></td>
+                <td><code>{{ row.metric }}</code></td>
+                <td><code>{{ row.path }}</code></td>
+                <td class="num">{{ row.n }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="tracker-empty">No metric or chart-tab clicks yet.</div>
+    {% endif %}
+
+    <!-- ── Recent activity log ────────────────────────────────────── -->
+    <h2 class="tracker-section-title">Recent events</h2>
+    {% if recent_events %}
+    <table class="tracker-table">
+        <thead>
+            <tr>
+                <th>When (UTC)</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Page</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in recent_events %}
+            <tr>
+                <td><code>{{ row.occurred_at }}</code></td>
+                <td><span class="tracker-pill">{{ row.event_type }}</span></td>
+                <td>{{ row.event_value }}</td>
+                <td><code>{{ row.path }}</code></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="tracker-empty">No events logged yet.</div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

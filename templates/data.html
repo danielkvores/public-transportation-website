@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Data Explorer — The 15-Minute Divide{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header__inner">
+        <h1 class="page-header__title">Data Explorer</h1>
+        <p class="page-header__sub">
+            All charts pull live from the database. Each point is a NUTS-2 region.
+            Hover for region names. Use the country selector to zoom in.
+        </p>
+    </div>
+</div>
+
+<div class="charts-layout">
+
+    <!-- ── Section 1: Typology comparison ─────────────────────────── -->
+    <section class="chart-section" id="section-typology">
+        <div class="chart-section__header">
+            <span class="chart-section__number">01</span>
+            <div>
+                <h2 class="chart-section__title">Urban, Intermediate, Rural — The Core Divide</h2>
+                <p class="chart-section__desc">
+                    Average outcomes for EU NUTS-2 regions grouped by their official Eurostat
+                    urban-rural typology. <strong>GDP per capita is where the gap is widest:</strong>
+                    urban regions produce far more economic output per person than rural ones,
+                    even though employment rates are nearly identical. Life expectancy and
+                    education tell the same story in years and percentage points.
+                </p>
+            </div>
+        </div>
+        <div class="chart-tabs" id="typology-tabs">
+            <button class="chart-tab chart-tab--active" data-metric="gdp_per_capita">GDP per capita (PPS)</button>
+            <button class="chart-tab" data-metric="life_expectancy">Life Expectancy</button>
+            <button class="chart-tab" data-metric="tertiary">Tertiary Education</button>
+            <button class="chart-tab" data-metric="early_leavers">Early School Leavers</button>
+            <button class="chart-tab" data-metric="employment">Employment</button>
+        </div>
+        <div class="chart-wrap chart-wrap--bar">
+            <canvas id="chart-typology"></canvas>
+        </div>
+        <p class="chart-note">
+            Source: Eurostat nama_10r_2gdp (GDP per capita, PPS),
+            lfst_r_lfe2emprt (employment), demo_r_mlifexp (life expectancy),
+            edat_lfse_04 / edat_lfse_16 (education). Typology from the official
+            Eurostat NUTS 2021 urban-rural classification (see Methodology).
+            GDP per capita is reported at workplace, not residence — capital regions
+            are inflated by commuters.
+        </p>
+    </section>
+
+    <!-- ── Section 2: Railway density vs employment ────────────────── -->
+    <section class="chart-section" id="section-scatter">
+        <div class="chart-section__header">
+            <span class="chart-section__number">02</span>
+            <div>
+                <h2 class="chart-section__title">Connected Regions Work More</h2>
+                <p class="chart-section__desc">
+                    Scatter plot of railway density (km of track per 1,000 km²) against employment rate
+                    for each NUTS-2 region. Colour indicates urban-rural classification.
+                    The upward slope is the structural argument: connectivity and employment move together.
+                </p>
+            </div>
+        </div>
+        <div class="chart-wrap chart-wrap--scatter">
+            <canvas id="chart-scatter"></canvas>
+        </div>
+        <p class="chart-note">
+            Source: Eurostat tran_r_net (2024), lfst_r_lfe2emprt (2024).
+            Hover over a point to see the region name.
+        </p>
+    </section>
+
+    <!-- ── Section 3: Country comparison ──────────────────────────── -->
+    <section class="chart-section" id="section-country">
+        <div class="chart-section__header">
+            <span class="chart-section__number">03</span>
+            <div>
+                <h2 class="chart-section__title">Within-Country Regional Gaps</h2>
+                <p class="chart-section__desc">
+                    Select a country to see its NUTS-2 regions compared against the EU-27 average.
+                    Even in high-performing countries, lagging regions tell the same story.
+                </p>
+            </div>
+        </div>
+        <div class="country-selector-wrap">
+            <label for="country-select" class="selector-label">Select a country:</label>
+            <select id="country-select" class="country-select">
+                <option value="">— Choose a country —</option>
+                {% for c in countries %}
+                <option value="{{ c.country_code }}">{{ c.country_name }}</option>
+                {% endfor %}
+            </select>
+            <div class="metric-toggle" id="country-metric-toggle">
+                <button class="metric-btn metric-btn--active" data-field="gdp_per_capita_pps">
+                    GDP per capita (PPS)
+                </button>
+                <button class="metric-btn" data-field="life_expectancy_at_birth">
+                    Life expectancy
+                </button>
+                <button class="metric-btn" data-field="tertiary_attainment_pct">
+                    Tertiary education
+                </button>
+                <button class="metric-btn" data-field="employment_rate_pct">
+                    Employment rate
+                </button>
+            </div>
+        </div>
+        <div class="chart-wrap chart-wrap--bar" id="country-chart-wrap" style="display:none;">
+            <canvas id="chart-country"></canvas>
+        </div>
+        <div class="placeholder-msg" id="country-placeholder">
+            ← Select a country to load its regional data
+        </div>
+        <p class="chart-note">
+            Dashed line shows EU-27 average for the selected indicator.
+            Regions coloured by urban-rural classification.
+        </p>
+    </section>
+
+    <!-- ── Section 4: Top & bottom regions ────────────────────────── -->
+    <section class="chart-section" id="section-rankings">
+        <div class="chart-section__header">
+            <span class="chart-section__number">04</span>
+            <div>
+                <h2 class="chart-section__title">The Top and Bottom 30 Regions</h2>
+                <p class="chart-section__desc">
+                    The 30 highest- and 30 lowest-employment NUTS-2 regions in the EU.
+                    Notice how rural regions cluster at the bottom, urban at the top —
+                    with only rare exceptions.
+                </p>
+            </div>
+        </div>
+        <div class="chart-wrap chart-wrap--rankings">
+            <canvas id="chart-rankings"></canvas>
+        </div>
+        <p class="chart-note">
+            Source: Eurostat lfst_r_lfe2emprt (2024).
+            Colour: urban = blue, intermediate = teal, rural = amber.
+        </p>
+    </section>
+
+</div><!-- /charts-layout -->
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

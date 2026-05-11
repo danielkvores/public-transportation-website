@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}Methodology — The 15-Minute Divide{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="page-header__inner">
+        <h1 class="page-header__title">Methodology</h1>
+        <p class="page-header__sub">
+            Data sources, cleaning decisions, database design, and known limitations.
+        </p>
+    </div>
+</div>
+
+<div class="prose-layout">
+
+    <!-- ── Data sources ───────────────────────────────────────────── -->
+    <section class="prose-section">
+        <h2>Data sources</h2>
+        <p>
+            All quantitative data comes from
+            <a href="https://ec.europa.eu/eurostat" target="_blank" rel="noopener">Eurostat</a>,
+            the statistical office of the European Union. Numerical datasets were
+            downloaded in <strong>SDMX-CSV 2.0 format</strong> (gzipped) from the
+            Eurostat bulk download facility, with the urban-rural classification
+            taken from the official NUTS 2021 reference spreadsheet. All raw files
+            are stored unmodified in <code>data/raw/</code>.
+        </p>
+
+        <div class="dataset-grid">
+            {% for s in summaries %}
+            <div class="dataset-card">
+                <div class="dataset-card__header">
+                    <span class="dataset-card__label">{{ s.label }}</span>
+                    <span class="dataset-card__year">{{ s.year }}</span>
+                </div>
+                <p class="dataset-card__source"><code>{{ s.source }}</code></p>
+                <div class="dataset-card__stats">
+                    <div>
+                        <span class="ds-stat__val">{{ s.n }}</span>
+                        <span class="ds-stat__key">regions</span>
+                    </div>
+                    <div>
+                        <span class="ds-stat__val">{{ s.avg_val }}</span>
+                        <span class="ds-stat__key">mean</span>
+                    </div>
+                    <div>
+                        <span class="ds-stat__val">{{ s.min_val }} – {{ s.max_val }}</span>
+                        <span class="ds-stat__key">range</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ── Data scope ─────────────────────────────────────────────── -->
+    <section class="prose-section">
+        <h2>Scope and filtering</h2>
+        <ul class="prose-list">
+            <li>
+                <strong>Geographic unit:</strong> NUTS-2 regions (4-character Eurostat codes).
+                NUTS-0 (countries), NUTS-1, and NUTS-3 sub-regions are excluded from the
+                outcome tables. The 27 EU member states are included; candidate and
+                non-member countries are excluded. Greece uses the prefix "EL" per
+                Eurostat convention.
+            </li>
+            <li>
+                <strong>Temporal scope:</strong> For each dataset, the most recent year
+                with at least 80% of EU-27 NUTS-2 regions reporting a valid value is
+                selected. If no year meets that threshold, the year with the most
+                observations is used.
+            </li>
+            <li>
+                <strong>Value selection:</strong> Only rows with non-null
+                <code>OBS_VALUE</code> are kept. Missing values in Eurostat datasets
+                may indicate that a region is not classifiable under that typology,
+                or that data collection was incomplete.
+            </li>
+            <li>
+                <strong>Annual frequency:</strong> Only <code>freq = "A"</code>
+                (annual) observations are used; quarterly or monthly breakdowns
+                are not considered.
+            </li>
+        </ul>
+    </section>
+
+    <!-- ── Per-dataset notes ──────────────────────────────────────── -->
+    <section class="prose-section">
+        <h2>Dataset-specific cleaning notes</h2>
+
+        <div class="method-block">
+            <h3>Transport infrastructure — <code>tran_r_net</code></h3>
+            <p>
+                Filtered to <code>tra_infr = "RL"</code> (total railway line length)
+                and <code>"MWAY"</code> (motorways). Unit <code>KM_TKM2</code>
+                (kilometres per thousand square kilometres) is used directly —
+                this is already a density measure, removing the need to join area data.
+                Year used: 2024.
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>Vehicle stock — <code>tran_r_vehst</code></h3>
+            <p>
+                Filtered to <code>vehicle = "CAR"</code> (passenger cars) and
+                <code>unit = "P_THAB"</code> (per thousand inhabitants).
+                This gives the motorisation rate directly, without needing to
+                divide by population. Year used: 2024.
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>Employment rate — <code>lfst_r_lfe2emprt</code></h3>
+            <p>
+                Working-age employment rate: <code>age = "Y20-64"</code>,
+                <code>sex = "T"</code> (total), <code>unit = "PC"</code> (percentage).
+                Year used: 2024.
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>Unemployment rate — <code>lfst_r_lfu3rt</code></h3>
+            <p>
+                Broad unemployment rate: <code>age = "Y15-74"</code>,
+                <code>sex = "T"</code>, <code>isced11 = "TOTAL"</code>
+                (all education levels), <code>unit = "PC"</code>.
+                Year used: 2024.
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>Tertiary attainment — <code>edat_lfse_04</code></h3>
+            <p>
+                Share of population aged 25–34 with tertiary education (ISCED 5–8):
+                <code>isced11 = "ED5-8"</code>, <code>age = "Y25-34"</code>,
+                <code>sex = "T"</code>. Year used: 2024.
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>Early school leavers — <code>edat_lfse_16</code></h3>
+            <p>
+                Share of 18–24 year-olds who have left education without an upper
+                secondary qualification: <code>age = "Y18-24"</code>,
+                <code>sex = "T"</code>. Year used: 2019 (best coverage available).
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>Life expectancy — <code>demo_r_mlifexp</code></h3>
+            <p>
+                Life expectancy at birth: <code>age = "Y_LT1"</code>
+                (less than 1 year old = at birth), <code>sex = "T"</code>,
+                <code>unit = "YR"</code> (years). Year used: 2024.
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>Physicians — <code>hlth_rs_prsrg</code></h3>
+            <p>
+                Medical doctors per 100,000 inhabitants:
+                <code>isco08 = "OC221"</code> (medical doctors),
+                <code>unit = "P_HTHAB"</code>. This dataset is historical and ends
+                in 2020/2021; year used: 2016 (best NUTS-2 EU-27 coverage).
+            </p>
+        </div>
+
+        <div class="method-block">
+            <h3>GDP per capita — <code>nama_10r_2gdp</code></h3>
+            <p>
+                GDP per inhabitant in purchasing power standards:
+                <code>unit = "PPS_EU27_2020_HAB"</code> (PPS per inhabitant,
+                EU27 2020 baseline). PPS adjusts for cross-country price-level
+                differences so a Bulgarian and a Dutch figure are directly
+                comparable. Year used: 2024.
+            </p>
+            <p>
+                <strong>Workplace, not residence.</strong> Eurostat records GDP
+                where economic output is generated, not where workers live.
+                Capital regions like Île-de-France, Inner London (pre-Brexit),
+                and Luxembourg therefore appear far wealthier than their resident
+                populations are, because commuters from neighbouring regions
+                contribute to the headline number. This is a feature of the data,
+                not a bug, and it actually reinforces the connectivity argument:
+                rural workers can only access high-productivity urban jobs if
+                they can physically reach them.
+            </p>
+        </div>
+    </section>
+
+    <!-- ── Urban-rural typology ───────────────────────────────────── -->
+    <section class="prose-section">
+        <h2>Urban-rural typology</h2>
+        <p>
+            Urban-rural classification comes from the official Eurostat
+            <strong>NUTS 2021 urban-rural typology</strong>, downloaded from the
+            Eurostat NUTS reference spreadsheet
+            (<a href="https://ec.europa.eu/eurostat/documents/345175/629341/NUTS2021.xlsx"
+                target="_blank" rel="noopener"><code>NUTS2021.xlsx</code></a>,
+            sheet <em>Urban-rural</em>). Each NUTS-3 region is assigned one of three
+            categories:
+        </p>
+        <ul class="prose-list">
+            <li>
+                <strong>Predominantly urban:</strong> at least 80% of the population
+                lives in urban grid cells.
+            </li>
+            <li>
+                <strong>Intermediate:</strong> between 50% and 80% urban population.
+            </li>
+            <li>
+                <strong>Predominantly rural:</strong> more than half of the population
+                lives in rural grid cells.
+            </li>
+        </ul>
+        <p>
+            All outcome data in this project (employment, education, health,
+            transport) is reported at NUTS-2 level, while the typology lives at
+            NUTS-3. To bring them onto the same axis, each NUTS-2 region is
+            assigned a <strong>dominant typology</strong> equal to the most
+            common category among its NUTS-3 children. Ties are broken in favour
+            of the more-urban category — a NUTS-2 region with equal urban and
+            rural NUTS-3 children is labelled urban on the grounds that the
+            anchor city dominates regional outcomes.
+        </p>
+        <p>
+            The dominant typology is computed once at load time and stored as a
+            denormalised <code>urban_rural_typology</code> column on
+            <code>nuts2_regions</code>, alongside the full per-NUTS-3 table. This
+            preserves the proper one-to-many relational structure
+            (1 NUTS-2 → many NUTS-3, 242 NUTS-2 parents covering 1,166 NUTS-3
+            regions in EU-27) while keeping dashboard queries simple.
+        </p>
+        <div class="callout callout--warning">
+            <strong>Boundary version mismatch.</strong>
+            The typology spreadsheet uses NUTS 2021 boundaries; some Eurostat
+            datasets we consume already use NUTS 2024. Seven NUTS-2 codes
+            (notably new Dutch and Portuguese subdivisions) appear in the 2024
+            data but have no published NUTS 2021 typology. These regions, plus
+            extra-regio &ldquo;ZZ&rdquo; aggregate codes, are dropped during the
+            load step (65 codes total). Eurostat has not yet published a
+            machine-readable NUTS 2024 typology.
+        </div>
+    </section>
+
+    <!-- ── Database design ───────────────────────────────────────── -->
+    <section class="prose-section">
+        <h2>Database design</h2>
+        <p>
+            Data is stored in a SQLite relational database
+            (<code>database/the_15_minute_divide.db</code>) with 7 tables and
+            foreign-key constraints. Raw SQLite3 is used throughout — no ORM.
+        </p>
+        <div class="erd-box">
+            <pre class="erd">
+countries (1) ──&lt; (many) nuts2_regions
+nuts2_regions (1) ──&lt; (many) nuts3_regions
+nuts2_regions (1) ──&lt; (many) transport_infrastructure
+nuts2_regions (1) ──&lt; (many) employment_outcomes
+nuts2_regions (1) ──&lt; (many) education_outcomes
+nuts2_regions (1) ──&lt; (many) health_outcomes
+            </pre>
+        </div>
+        <p>
+            All Flask routes use parameterised queries (<code>?</code> placeholders)
+            to prevent SQL injection. The <code>sqlite3.Row</code> factory is used so
+            query results behave as dictionaries when passed to Jinja templates or
+            serialised as JSON.
+        </p>
+    </section>
+
+    <!-- ── Limitations ────────────────────────────────────────────── -->
+    <section class="prose-section">
+        <h2>Limitations</h2>
+        <ul class="prose-list">
+            <li>
+                <strong>Causation vs. correlation.</strong> All relationships shown are
+                correlational. Transport infrastructure may be a consequence of urbanisation
+                rather than a cause of better outcomes.
+            </li>
+            <li>
+                <strong>Cross-country comparability.</strong> Raw indicators are not
+                z-score normalised across countries. A Dutch baseline and a Bulgarian
+                baseline are structurally different. Country-level charts are provided
+                for within-country comparison.
+            </li>
+            <li>
+                <strong>Temporal mismatch.</strong> Indicators come from different years
+                (2016–2024). Causal inferences across time are not intended.
+            </li>
+            <li>
+                <strong>Proxy typology.</strong> The urban-rural classification is
+                employment-derived, not the official Eurostat NUTS-3 typology.
+                Capital-city regions are hardcoded as urban; remaining regions are
+                classified by tertile.
+            </li>
+            <li>
+                <strong>Missing data.</strong> Not all NUTS-2 regions have data for
+                all indicators. Charts display only regions with available data and
+                do not impute missing values.
+            </li>
+        </ul>
+    </section>
+
+    <!-- ── AI disclosure ─────────────────────────────────────────── -->
+    <section class="prose-section">
+        <h2>AI disclosure</h2>
+        <p>
+            Claude (Anthropic) was used as a coding assistant for this project.
+            Its contributions included: structuring the data pipeline, writing
+            and debugging Python cleaning scripts, drafting Flask routes, and
+            scaffolding the HTML/CSS templates. All data sourcing decisions,
+            methodological choices, and written analysis are the author's own.
+            The AI was not used to generate or fabricate any data values.
+        </p>
+    </section>
+
+</div><!-- /prose-layout -->
+
+{% endblock %}
