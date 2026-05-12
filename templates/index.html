@@ -36,46 +36,47 @@ Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
         <div class="narrative__text">
             <span class="narrative__label">The Thesis</span>
             <h2>
-                Distance from the city is not just a coordinate. It is a
-                destiny.
+                Distance from a city can shape your future.
             </h2>
             <p>
-                Across the European Union, regions classified as "predominantly
-                rural" consistently report lower employment, shorter lives, and
-                fewer university graduates than their urban counterparts. These
-                gaps are not random — they follow the routes of railways and
-                motorways, or rather, the absence of them.
+                Across the European Union, predominantly rural regions often report weaker outcomes than urban ones:
+                lower employment, lower tertiary education attainment, and in some cases shorter life expectancy. The
+                pattern is not universal, and it is not explained by transport alone. But it does follow a familiar
+                geography: regions closer to major cities and transport corridors tend to have more direct access to
+                jobs, universities, healthcare, and public services.
             </p>
             <p>
-                The <strong>15-minute city</strong> — a planning concept
-                promising every amenity within a quarter-hour's walk or cycle —
-                has become a touchstone of progressive urbanism. But for
-                hundreds of millions of Europeans, the nearest hospital, job
-                centre, or university is not 15 minutes away. It is a car
-                journey that many cannot afford, or a bus that runs twice a day.
+                That is why this project looks beyond simple country rankings. The question is not whether education
+                levels are higher in the Netherlands than in Hungary, or whether richer countries perform better than
+                poorer ones. The more revealing question is how large the gaps are <strong>within</strong> each country.
             </p>
+            <p>In countries with dense and reliable transport networks, regional differences can be less pronounced. In
+                countries where connectivity is more uneven, the distance between a capital region and a peripheral
+                region can become a much larger divide.</p>
         </div>
     </section>
 
     <section class="narrative__section narrative__section--highlight">
         <div class="narrative__text">
             <span class="narrative__label">The Evidence</span>
-            <h2>Transport infrastructure and life outcomes move together.</h2>
+            <h2>Rail density is not the whole story, but it reveals part of the pattern.</h2>
             <p>
-                Using eight Eurostat datasets covering {{ stats.n_regions }}
-                NUTS-2 regions across all 27 EU member states, this project maps
-                four outcome domains —
-                <strong>employment, education, health,</strong> and
-                <strong>transport connectivity</strong> — and shows how they
-                co-vary with the urban-rural classification of each region.
+                Using Eurostat regional data across {{ stats.n_regions }} NUTS-2 regions and {{ stats.n_countries }} EU
+                member states, this project compares outcomes in employment, education, health, economic performance,
+                and transport infrastructure. For connectivity, it uses railway density as a proxy: kilometres of
+                railway line per 1,000 km².
             </p>
             <p>
-                The pattern is stark. Regions with higher railway and motorway
-                density cluster at the top of every outcome ranking. The
-                correlation is not merely about wealth: even within countries,
-                better-connected regions outperform their more isolated
-                neighbours on every indicator.
+                That proxy has limits. It does not measure train frequency, ticket prices, service reliability, travel
+                time to a university or hospital, or whether a railway line actually serves the people who live nearby.
+                But it does show where fixed transport infrastructure is concentrated, and where it is comparatively
+                thin.
             </p>
+            <p>The pattern is not a simple rule where every connected region performs better than every isolated one.
+                National wealth, urban concentration, age structure, and education systems all matter. Still, the data
+                points to a recurring divide: regions with denser transport infrastructure are more often part of the
+                economic and institutional core, while less connected regions are more likely to sit at the edge of
+                opportunity.</p>
         </div>
         <aside class="narrative__facts" aria-label="Evidence base">
             <span class="narrative__facts-label">Evidence base</span>
@@ -99,20 +100,31 @@ Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
     <section class="narrative__section">
         <div class="narrative__text">
             <span class="narrative__label">The Stakes</span>
-            <h2>Cohesion funding alone cannot bridge the divide.</h2>
+            <h2>Funding alone cannot close the distance.</h2>
             <p>
-                The EU spends over €350 billion per programming period on
-                cohesion policy, much of it on infrastructure. Yet the
-                urban-rural gap persists, and in some indicators is widening.
-                The question this project poses is not whether money is being
-                spent, but whether the right connections are being built — and
-                whether the regions that most need them are receiving them.
-            </p>
+                The EU has set aside around <a
+                    href="https://www.consilium.europa.eu/en/press/press-releases/2021/05/28/council-adopts-330-billion-cohesion-package-for-2021-2027/"
+                    target="_blank" rel="noopener noreferrer">
+                    €392 billion for Cohesion Policy in 2021-2027 </a>, with regional development and infrastructure
+                among its central priorities. That
+                spending
+                matters. But the persistence of regional gaps shows that money alone does not guarantee equal access
+                to jobs, education, healthcare, or public services. </p>
             <p>
-                The data pages that follow do not prescribe solutions. They tell
-                you what the numbers say: that where you can go in 15 minutes
-                shapes almost everything else about your life.
+                The question is not simply whether investment reaches poorer regions. It is whether those
+                investments
+                make everyday access easier: whether people can reach a university without leaving their region,
+                commute
+                to work without depending on a car, or get to essential services without planning their day
+                around a
+                limited timetable.
             </p>
+            <p>The data pages that follow do not prescribe a single solution. They show where opportunity is
+                concentrated, where connectivity is thinner, and where regional inequality remains visible in
+                the
+                numbers. <strong>The issue is not just how much Europe spends, but what kind of access that
+                    spending
+                    creates.</strong></p>
         </div>
     </section>
 
@@ -125,7 +137,7 @@ Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
             </p>
             <div class="cta-group">
                 <a href="{{ url_for('data') }}" class="btn btn--primary">Explore the data</a>
-                <a href="{{ url_for('methodology') }}" class="btn btn--secondary">How we built this</a>
+                <a href="{{ url_for('methodology') }}" class="btn btn--secondary">How I built this</a>
             </div>
         </div>
     </section>
