@@ -1,5 +1,5 @@
 /**
- * charts.js — The 15-Minute Divide
+ * charts.js — Where the Lines End
  * Chart.js 4.x visualisations for the /data page.
  * Data is fetched live from Flask API endpoints (/api/*).
  */

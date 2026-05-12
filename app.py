@@ -1,5 +1,5 @@
 """
-app.py — The 15-Minute Divide
+app.py — Where the Lines End
 Flask web application. All data is served from SQLite via raw sqlite3.
 """
 
@@ -52,15 +52,41 @@ def index():
 
     # Quick headline stats for the hero section
     cur.execute("""
+        WITH rail_by_typology AS (
+            SELECT
+                n.urban_rural_typology AS typology,
+                AVG(t.railway_density_per_1000km2) AS avg_rail_density
+            FROM nuts2_regions n
+            JOIN transport_infrastructure t ON n.nuts2_code = t.nuts2_code
+            WHERE t.railway_density_per_1000km2 IS NOT NULL
+            GROUP BY n.urban_rural_typology
+        ),
+        country_education_gaps AS (
+            SELECT
+                n.country_code,
+                MAX(ed.tertiary_attainment_pct) - MIN(ed.tertiary_attainment_pct)
+                    AS tertiary_gap
+            FROM nuts2_regions n
+            JOIN education_outcomes ed ON n.nuts2_code = ed.nuts2_code
+            WHERE ed.tertiary_attainment_pct IS NOT NULL
+            GROUP BY n.country_code
+            HAVING COUNT(DISTINCT n.nuts2_code) > 1
+        )
         SELECT
-            COUNT(DISTINCT n.nuts2_code)                         AS n_regions,
-            ROUND(AVG(e.employment_rate_pct), 1)                 AS avg_emp,
-            ROUND(MAX(e.employment_rate_pct) - MIN(e.employment_rate_pct), 1) AS emp_range,
-            ROUND(MAX(h.life_expectancy_at_birth)
-                - MIN(h.life_expectancy_at_birth), 1)            AS le_range
-        FROM nuts2_regions n
-        LEFT JOIN employment_outcomes e ON n.nuts2_code = e.nuts2_code
-        LEFT JOIN health_outcomes     h ON n.nuts2_code = h.nuts2_code
+            (SELECT COUNT(DISTINCT nuts2_code) FROM nuts2_regions) AS n_regions,
+            (SELECT COUNT(DISTINCT country_code) FROM countries) AS n_countries,
+            ROUND(
+                (SELECT avg_rail_density FROM rail_by_typology
+                 WHERE typology = 'predominantly urban')
+                / NULLIF(
+                    (SELECT avg_rail_density FROM rail_by_typology
+                     WHERE typology = 'predominantly rural'),
+                    0
+                ),
+                1
+            ) AS rail_density_ratio,
+            ROUND((SELECT AVG(tertiary_gap) FROM country_education_gaps), 1)
+                AS avg_tertiary_gap
     """)
     stats = dict(cur.fetchone())
     conn.close()

@@ -1,14 +1,12 @@
-{% extends "base.html" %} {% block title %}The 15-Minute Divide — Public
+{% extends "base.html" %} {% block title %}Where the Lines End — Public
 Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
 
 <!-- ── Hero ─────────────────────────────────────────────────────── -->
 <section class="hero">
     <div class="hero__inner">
-        <h1 class="hero__headline">The 15-Minute<br />Divide</h1>
+        <h1 class="hero__headline">Where the<br />Lines End</h1>
         <p class="hero__sub">
-            Where you live in Europe determines how long you live, how far you
-            go in school, and whether you find work — and public transport is
-            the thread that connects it all.
+            Public transport, regional inequality, and access to education, health, and opportunity across Europe.
         </p>
         <div class="hero__stats">
             <div class="stat-card">
@@ -16,27 +14,25 @@ Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
                 <span class="stat-card__label">EU NUTS-2 regions analysed</span>
             </div>
             <div class="stat-card">
-                <span class="stat-card__number">{{ stats.emp_range }}pp</span>
-                <span class="stat-card__label"
-                    >employment-rate gap between regions</span
-                >
+                <span class="stat-card__number">{{ stats.rail_density_ratio }}x</span>
+                <span class="stat-card__label">higher average rail density in urban regions than rural regions</span>
             </div>
             <div class="stat-card">
-                <span class="stat-card__number">{{ stats.le_range }} yrs</span>
-                <span class="stat-card__label"
-                    >life-expectancy gap across the EU</span
-                >
+                <span class="stat-card__number">{{ stats.avg_tertiary_gap }}pp</span>
+                <span class="stat-card__label">average within-country gap in tertiary education attainment</span>
             </div>
         </div>
-        <a href="{{ url_for('data') }}" class="btn btn--primary"
-            >Explore the data →</a
-        >
+        <a href="#thesis" class="hero__continue" aria-label="Continue to the thesis">
+            Continue
+            <span aria-hidden="true">↓</span>
+        </a>
+        <!-- <a href="{{ url_for('data') }}" class="btn btn--primary">Explore the data →</a> -->
     </div>
 </section>
 
 <!-- ── Narrative ─────────────────────────────────────────────────── -->
 <article class="narrative">
-    <section class="narrative__section">
+    <section class="narrative__section" id="thesis">
         <div class="narrative__text">
             <span class="narrative__label">The Thesis</span>
             <h2>
@@ -81,12 +77,23 @@ Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
                 neighbours on every indicator.
             </p>
         </div>
-        <div class="narrative__pullquote">
-            <blockquote>
-                "A region without trains is a region without a future."
-                <cite>— Paraphrasing the 2023 Eurostat Regional Yearbook</cite>
-            </blockquote>
-        </div>
+        <aside class="narrative__facts" aria-label="Evidence base">
+            <span class="narrative__facts-label">Evidence base</span>
+            <dl>
+                <div>
+                    <dt>{{ stats.n_regions }}</dt>
+                    <dd>NUTS-2 regions</dd>
+                </div>
+                <div>
+                    <dt>{{ stats.n_countries }}</dt>
+                    <dd>EU member states</dd>
+                </div>
+                <div>
+                    <dt>Eurostat</dt>
+                    <dd>transport and outcome data</dd>
+                </div>
+            </dl>
+        </aside>
     </section>
 
     <section class="narrative__section">
@@ -117,14 +124,8 @@ Transport &amp; EU Regional Inequality{% endblock %} {% block content %}
                 indicator, and by country — and draw your own conclusions.
             </p>
             <div class="cta-group">
-                <a href="{{ url_for('data') }}" class="btn btn--primary"
-                    >Explore the data</a
-                >
-                <a
-                    href="{{ url_for('methodology') }}"
-                    class="btn btn--secondary"
-                    >How we built this</a
-                >
+                <a href="{{ url_for('data') }}" class="btn btn--primary">Explore the data</a>
+                <a href="{{ url_for('methodology') }}" class="btn btn--secondary">How we built this</a>
             </div>
         </div>
     </section>

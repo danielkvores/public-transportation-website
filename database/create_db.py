@@ -1,6 +1,6 @@
 """
 create_db.py
-Creates the SQLite database and all 7 tables for "The 15-Minute Divide".
+Creates the SQLite database and all 7 tables for "Where the Lines End".
 Run this before load_data.py.
 """
 

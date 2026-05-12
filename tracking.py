@@ -1,5 +1,5 @@
 """
-tracking.py — Custom user-tracking for The 15-Minute Divide.
+tracking.py — Custom user-tracking for Where the Lines End.
 
 Three things get logged:
   1. Page views        — server-side, in `before_request` (works with JS off)
