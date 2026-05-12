@@ -773,16 +773,23 @@ Don't have a good usecase for it now, commenting out */
     text-transform: uppercase;
 }
 
-.chart-wrap--bar {
+.chart-wrap--bar,
+.chart-wrap--split,
+.chart-wrap--buckets {
     height: 460px;
+}
+
+.chart-wrap--country {
+    height: 560px;
 }
 
 .chart-wrap--scatter {
     height: 540px;
 }
 
-.chart-wrap--rankings {
-    height: 1180px;
+.chart-wrap--rankings,
+.chart-wrap--gaps {
+    height: 760px;
 }
 
 .chart-wrap canvas {
@@ -791,20 +798,20 @@ Don't have a good usecase for it now, commenting out */
 }
 
 /* small "FIG. NN" tags per section give the editorial-plate feel */
-#section-typology .chart-wrap::before {
-    content: "FIG. 01 · TYPOLOGY";
-}
-
-#section-scatter .chart-wrap::before {
-    content: "FIG. 02 · RAIL × WORK";
-}
-
 #section-country .chart-wrap::before {
-    content: "FIG. 03 · COUNTRY";
+    content: "FIG. 01 · COUNTRY";
 }
 
-#section-rankings .chart-wrap::before {
-    content: "FIG. 04 · RANKINGS";
+#section-typology .chart-wrap::before {
+    content: "FIG. 02 · TYPOLOGY";
+}
+
+#section-rail .chart-wrap::before {
+    content: "FIG. 03 · RAIL BANDS";
+}
+
+#section-gaps .chart-wrap::before {
+    content: "FIG. 04 · GAPS";
 }
 
 .chart-note {
@@ -1469,16 +1476,23 @@ Don't have a good usecase for it now, commenting out */
         padding-top: 1.5rem;
     }
 
-    .chart-wrap--bar {
+    .chart-wrap--bar,
+    .chart-wrap--split,
+    .chart-wrap--buckets {
         height: 360px;
+    }
+
+    .chart-wrap--country {
+        height: 460px;
     }
 
     .chart-wrap--scatter {
         height: 420px;
     }
 
-    .chart-wrap--rankings {
-        height: 1000px;
+    .chart-wrap--rankings,
+    .chart-wrap--gaps {
+        height: 720px;
     }
 
     .country-selector-wrap {

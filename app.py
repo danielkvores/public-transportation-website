@@ -187,6 +187,68 @@ def api_typology_outcomes():
     return jsonify(rows)
 
 
+@app.route("/api/typology-income-split")
+def api_typology_income_split():
+    """
+    Average outcomes by urban-rural typology, split by country GDP half.
+    Countries are split by their average NUTS-2 GDP per capita. This keeps
+    richer country systems from flattening the sharper gaps in lower-GDP
+    member states.
+    """
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        WITH country_income AS (
+            SELECT
+                n2.country_code,
+                AVG(ec.gdp_per_capita_pps) AS avg_country_gdp
+            FROM nuts2_regions n2
+            JOIN economic_outcomes ec ON n2.nuts2_code = ec.nuts2_code
+            WHERE ec.gdp_per_capita_pps IS NOT NULL
+            GROUP BY n2.country_code
+        ),
+        ranked_countries AS (
+            SELECT
+                country_code,
+                avg_country_gdp,
+                NTILE(2) OVER (ORDER BY avg_country_gdp) AS income_half
+            FROM country_income
+        )
+        SELECT
+            rc.income_half AS income_group_order,
+            CASE rc.income_half
+                WHEN 1 THEN 'Lower-GDP country half'
+                ELSE 'Higher-GDP country half'
+            END AS income_group,
+            n2.urban_rural_typology                       AS typology,
+            COUNT(DISTINCT n2.nuts2_code)                 AS n_regions,
+            ROUND(AVG(ec.gdp_per_capita_pps), 0)          AS avg_gdp_per_capita,
+            ROUND(AVG(t.railway_density_per_1000km2), 2)  AS avg_railway_density,
+            ROUND(AVG(e.employment_rate_pct), 2)          AS avg_employment,
+            ROUND(AVG(h.life_expectancy_at_birth), 2)     AS avg_life_expectancy,
+            ROUND(AVG(ed.tertiary_attainment_pct), 2)     AS avg_tertiary,
+            ROUND(AVG(ed.early_leavers_pct), 2)           AS avg_early_leavers
+        FROM nuts2_regions n2
+        JOIN ranked_countries rc ON n2.country_code = rc.country_code
+        LEFT JOIN economic_outcomes ec ON n2.nuts2_code = ec.nuts2_code
+        LEFT JOIN transport_infrastructure t ON n2.nuts2_code = t.nuts2_code
+        LEFT JOIN employment_outcomes e ON n2.nuts2_code = e.nuts2_code
+        LEFT JOIN health_outcomes h ON n2.nuts2_code = h.nuts2_code
+        LEFT JOIN education_outcomes ed ON n2.nuts2_code = ed.nuts2_code
+        GROUP BY rc.income_half, n2.urban_rural_typology
+        ORDER BY
+            rc.income_half,
+            CASE n2.urban_rural_typology
+                WHEN 'predominantly urban' THEN 1
+                WHEN 'intermediate'        THEN 2
+                WHEN 'predominantly rural' THEN 3
+            END
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
 @app.route("/api/transport-employment")
 def api_transport_employment():
     """
@@ -212,6 +274,61 @@ def api_transport_employment():
         WHERE t.railway_density_per_1000km2 IS NOT NULL
           AND e.employment_rate_pct          IS NOT NULL
         ORDER BY n2.nuts2_code
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
+@app.route("/api/rail-density-buckets")
+def api_rail_density_buckets():
+    """
+    NUTS-2 regions grouped into railway-density quartiles.
+    Used instead of a cluttered point cloud so the relationship between rail
+    density and outcomes can be read as distribution bands.
+    """
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        WITH region_metrics AS (
+            SELECT
+                n2.nuts2_code,
+                n2.urban_rural_typology AS typology,
+                t.railway_density_per_1000km2 AS railway_density,
+                ec.gdp_per_capita_pps,
+                e.employment_rate_pct,
+                h.life_expectancy_at_birth,
+                ed.tertiary_attainment_pct
+            FROM nuts2_regions n2
+            JOIN transport_infrastructure t ON n2.nuts2_code = t.nuts2_code
+            LEFT JOIN economic_outcomes ec ON n2.nuts2_code = ec.nuts2_code
+            LEFT JOIN employment_outcomes e ON n2.nuts2_code = e.nuts2_code
+            LEFT JOIN health_outcomes h ON n2.nuts2_code = h.nuts2_code
+            LEFT JOIN education_outcomes ed ON n2.nuts2_code = ed.nuts2_code
+            WHERE t.railway_density_per_1000km2 IS NOT NULL
+        ),
+        bucketed AS (
+            SELECT
+                *,
+                NTILE(4) OVER (ORDER BY railway_density) AS rail_bucket
+            FROM region_metrics
+        )
+        SELECT
+            rail_bucket,
+            COUNT(*) AS n_regions,
+            ROUND(MIN(railway_density), 2) AS min_railway_density,
+            ROUND(MAX(railway_density), 2) AS max_railway_density,
+            ROUND(AVG(railway_density), 2) AS avg_railway_density,
+            ROUND(AVG(gdp_per_capita_pps), 0) AS avg_gdp_per_capita,
+            ROUND(AVG(employment_rate_pct), 2) AS avg_employment,
+            ROUND(AVG(life_expectancy_at_birth), 2) AS avg_life_expectancy,
+            ROUND(AVG(tertiary_attainment_pct), 2) AS avg_tertiary,
+            SUM(CASE WHEN typology = 'predominantly urban' THEN 1 ELSE 0 END) AS urban_regions,
+            SUM(CASE WHEN typology = 'intermediate' THEN 1 ELSE 0 END) AS intermediate_regions,
+            SUM(CASE WHEN typology = 'predominantly rural' THEN 1 ELSE 0 END) AS rural_regions
+        FROM bucketed
+        GROUP BY rail_bucket
+        ORDER BY rail_bucket
     """)
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
@@ -266,17 +383,97 @@ def api_country(country_code):
             ROUND(AVG(e.employment_rate_pct), 2)       AS eu_avg_employment,
             ROUND(AVG(h.life_expectancy_at_birth), 2)  AS eu_avg_life_expectancy,
             ROUND(AVG(ed.tertiary_attainment_pct), 2)  AS eu_avg_tertiary,
-            ROUND(AVG(ec.gdp_per_capita_pps), 0)       AS eu_avg_gdp_per_capita
+            ROUND(AVG(ec.gdp_per_capita_pps), 0)       AS eu_avg_gdp_per_capita,
+            ROUND(AVG(t.railway_density_per_1000km2), 2)
+                AS eu_avg_railway_density
         FROM nuts2_regions n2
         LEFT JOIN employment_outcomes e  ON n2.nuts2_code = e.nuts2_code
         LEFT JOIN health_outcomes     h  ON n2.nuts2_code = h.nuts2_code
         LEFT JOIN education_outcomes  ed ON n2.nuts2_code = ed.nuts2_code
         LEFT JOIN economic_outcomes   ec ON n2.nuts2_code = ec.nuts2_code
+        LEFT JOIN transport_infrastructure t ON n2.nuts2_code = t.nuts2_code
     """)
     eu_avgs = dict(cur.fetchone())
     conn.close()
 
     return jsonify({"regions": regions, "eu_averages": eu_avgs})
+
+
+@app.route("/api/country-gap-rankings")
+def api_country_gap_rankings():
+    """
+    Country-level regional gaps for each metric.
+    Each metric contains the lowest and highest NUTS-2 region in that country,
+    so the chart can draw a min-to-max dumbbell instead of a long ranking list.
+    """
+    metric_fields = {
+        "gdp_per_capita_pps": "GDP per capita (PPS)",
+        "employment_rate_pct": "Employment rate, age 20-64 (%)",
+        "life_expectancy_at_birth": "Life expectancy at birth (years)",
+        "tertiary_attainment_pct": "Tertiary attainment, age 25-34 (%)",
+        "railway_density_per_1000km2": "Railway density (km per 1,000 km²)",
+    }
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT
+            n2.country_code,
+            c.country_name,
+            n2.nuts2_code,
+            n2.region_name,
+            n2.urban_rural_typology AS typology,
+            ec.gdp_per_capita_pps,
+            e.employment_rate_pct,
+            h.life_expectancy_at_birth,
+            ed.tertiary_attainment_pct,
+            t.railway_density_per_1000km2
+        FROM nuts2_regions n2
+        JOIN countries c ON n2.country_code = c.country_code
+        LEFT JOIN economic_outcomes ec ON n2.nuts2_code = ec.nuts2_code
+        LEFT JOIN employment_outcomes e ON n2.nuts2_code = e.nuts2_code
+        LEFT JOIN health_outcomes h ON n2.nuts2_code = h.nuts2_code
+        LEFT JOIN education_outcomes ed ON n2.nuts2_code = ed.nuts2_code
+        LEFT JOIN transport_infrastructure t ON n2.nuts2_code = t.nuts2_code
+        ORDER BY c.country_name, n2.region_name
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    countries = {}
+    for row in rows:
+        code = row["country_code"]
+        country = countries.setdefault(code, {
+            "country_code": code,
+            "country_name": row["country_name"],
+            "n_regions": 0,
+            "metrics": {},
+        })
+        country["n_regions"] += 1
+
+    for country in countries.values():
+        country_rows = [r for r in rows if r["country_code"] == country["country_code"]]
+        for field, label in metric_fields.items():
+            valid = [r for r in country_rows if r[field] is not None]
+            if len(valid) < 2:
+                country["metrics"][field] = None
+                continue
+
+            min_row = min(valid, key=lambda r: r[field])
+            max_row = max(valid, key=lambda r: r[field])
+            country["metrics"][field] = {
+                "label": label,
+                "count": len(valid),
+                "min": min_row[field],
+                "max": max_row[field],
+                "gap": max_row[field] - min_row[field],
+                "min_region": min_row["region_name"],
+                "max_region": max_row["region_name"],
+                "min_code": min_row["nuts2_code"],
+                "max_code": max_row["nuts2_code"],
+            }
+
+    return jsonify(list(countries.values()))
 
 
 @app.route("/api/regional-rankings")
