@@ -114,17 +114,37 @@ def methodology():
     summaries = []
     datasets = [
         ("transport_infrastructure", "railway_density_per_1000km2",
-         "Transport Infrastructure", "tran_r_net / tran_r_vehst", "2024"),
+         "Railway density", "tran_r_net", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/tran_r_net/default/table?lang=en"),
+        ("transport_infrastructure", "motorway_density_per_1000km2",
+         "Motorway density", "tran_r_net", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/tran_r_net/default/table?lang=en"),
+        ("transport_infrastructure", "motorisation_rate_per_1000",
+         "Motorisation rate", "tran_r_vehst", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/tran_r_vehst/default/table?lang=en"),
         ("employment_outcomes", "employment_rate_pct",
-         "Employment Outcomes", "lfst_r_lfe2emprt / lfst_r_lfu3rt", "2024"),
+         "Employment rate", "lfst_r_lfe2emprt", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/lfst_r_lfe2emprt/default/table?lang=en"),
+        ("employment_outcomes", "unemployment_rate_pct",
+         "Unemployment rate", "lfst_r_lfu3rt", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/lfst_r_lfu3rt/default/table?lang=en"),
         ("education_outcomes", "tertiary_attainment_pct",
-         "Education Outcomes", "edat_lfse_04 / edat_lfse_16", "2024 / 2019"),
+         "Tertiary attainment", "edat_lfse_04", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_04/default/table?lang=en"),
+        ("education_outcomes", "early_leavers_pct",
+         "Early school leavers", "edat_lfse_16", "2019",
+         "https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_16/default/table?lang=en"),
         ("health_outcomes", "life_expectancy_at_birth",
-         "Health Outcomes", "demo_r_mlifexp / hlth_rs_prsrg", "2024 / 2016"),
+         "Life expectancy", "demo_r_mlifexp", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/demo_r_mlifexp/default/table?lang=en"),
+        ("health_outcomes", "physicians_per_100k",
+         "Physicians", "hlth_rs_prsrg", "2016",
+         "https://ec.europa.eu/eurostat/databrowser/view/hlth_rs_prsrg/default/table?lang=en"),
         ("economic_outcomes", "gdp_per_capita_pps",
-         "Economic Outcomes", "nama_10r_2gdp", "2024"),
+         "GDP per capita", "nama_10r_2gdp", "2024",
+         "https://ec.europa.eu/eurostat/databrowser/view/nama_10r_2gdp/default/table?lang=en"),
     ]
-    for table, col, label, source, year in datasets:
+    for table, col, label, source, year, source_url in datasets:
         cur.execute(f"""
             SELECT COUNT(*) AS n,
                    ROUND(AVG({col}), 2)  AS avg_val,
@@ -134,7 +154,12 @@ def methodology():
             WHERE {col} IS NOT NULL
         """)
         row = dict(cur.fetchone())
-        row.update({"label": label, "source": source, "year": year})
+        row.update({
+            "label": label,
+            "source": source,
+            "source_url": source_url,
+            "year": year,
+        })
         summaries.append(row)
 
     conn.close()

@@ -1,27 +1,81 @@
+# Where the Lines End
 
-The main narrative here is how public transportation enables you to excel in three key domains: health care, education, and job prospects. I am going to look at all the countries individually, so I'm not comparing Dutch education and health care to Hungarian education and health care. What I want to present is that the further you live away from the big cities, which tend to have the best health care and transportation, etc., the more likely you are to suffer from the educational, employment, and health care costs. Now it might seem like I'm stating the obvious, but what I will try to demonstrate is how, in a well-interconnected country like the Netherlands, this problem is not really prevalent. From every corner of the country, I can basically get to a nearby city where I can get treated and I can get good quality health care. Basically, within the country, the inequality in terms of what the average city citizen and the average rural citizen experience is very similar. Opposed to something like Hungary, where people close to the capital have very good access to education -- obviously relative to the country. The more rural you are, the more difficult it is for you. Even if you look at smaller cities like Szeged or Debrecen or something, the closer you live to it, the more likely you are to get a decent education. The further you are from it, again looking within a country, the inadequate public transportation system of Hungary, we can see that the bigger the gap in terms of access to education, health care, and employment is going to be. We are either forcing people to commute by cars, which doesn't make sense from two perspectives:
+Flask data-journalism project on rail infrastructure, regional inequality, and access to opportunity across EU regions.
 
-1. First of all, because a car is a very expensive subscription; it's a financial burden.
-2. Second of all, the majority of these people use it to go to the same place. Most people take their cars from rural areas to go into the city to work, which is a very stable, very regular occurrence.
+The site compares transport infrastructure with employment, education, health, and economic indicators at NUTS-2 level. It focuses on within-country regional differences rather than ranking whole countries against one another.
 
-It would be much more efficient to implement a public transportation system that takes this route much more effectively than all the people taking their cars.
+## Current Scope
 
-**Dataset List**
+- Geographic scope: EU-27 only.
+- Analytical unit: retained NUTS-2 regions, joined to a dominant urban-rural typology rolled up from NUTS-3.
+- Current analytical universe: 27 countries, 242 NUTS-2 regions, and 1,166 NUTS-3 typology records.
+- Raw data location: `data/raw/`.
+- Database: `database/the_15_minute_divide.db`.
+- Core schema: 8 analytical tables plus 3 runtime tracking tables.
 
-**1. Eurostat Urban-Rural Typology (NUTS-3 classification)** Link: [https://ec.europa.eu/eurostat/web/rural-development/methodology](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Territorial_typologies_manual_-_urban-rural_typology) Purpose: Classifies every NUTS-3 region as predominantly urban, intermediate, or predominantly rural. This is your core independent variable — the thing you're arguing drives the divide.
+## Running Locally
 
-**2. tran_r_net — Road, rail and navigable inland waterways by NUTS-2 regions** Link: [https://ec.europa.eu/eurostat/databrowser/view/tran_r_net/default/bar?lang=en](https://ec.europa.eu/eurostat/databrowser/view/tran_r_net/default/bar?lang=en) Purpose: Railway line density (km/1,000 km²) and motorway density per NUTS-2 region. This is your transport accessibility proxy — regions with denser rail networks are better connected to services.
+```bash
+uv run flask --app app run --debug
+```
 
-**3. tran_r_vehst — Stock of vehicles by category and NUTS-2 region** Link: [https://ec.europa.eu/eurostat/databrowser/view/tran_r_vehst/default/table?lang=en](https://ec.europa.eu/eurostat/databrowser/view/tran_r_vehst/default/table?lang=en) Purpose: Motorisation rate (passenger cars per 1,000 inhabitants). Inverse proxy for public transport reliance — high car ownership signals car dependency and poor transit alternatives.
+Rebuild the analytical database from raw files:
 
-**4. lfst_r_lfe2emprt — Employment rates by NUTS-2 region** Link: [https://ec.europa.eu/eurostat/databrowser/product/view/lfst_r_lfe2emprt](https://ec.europa.eu/eurostat/databrowser/product/view/lfst_r_lfe2emprt) Purpose: Employment rate (%) for working-age population by region. Your first outcome variable — does better connectivity correlate with higher employment?
+```bash
+uv run python database/create_db.py
+uv run python database/load_data.py
+```
 
-**5. lfst_r_lfu3rt — Unemployment rates by NUTS-2 region** Link: [https://ec.europa.eu/eurostat/databrowser/view/lfst_r_lfu3rt/default/table?lang=en](https://ec.europa.eu/eurostat/databrowser/view/lfst_r_lfu3rt/default/table?lang=en) Purpose: Unemployment rate (%) — the flip side of employment. Useful because unemployment hits harder in transit-poor regions where people can't reach jobs in the next town.
+## Data Sources
 
-**6. edat_lfse_04 — Population by educational attainment level and NUTS-2 region** Link: [https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_04/default/table?lang=en](https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_04/default/table?lang=en) Purpose: Tertiary educational attainment (% of 25–34 year-olds with ISCED 5–8). Shows whether well-connected regions retain more educated populations.
+All indicator data comes from Eurostat. The numeric datasets are stored as gzipped SDMX-CSV 2.0 files; the urban-rural typology is stored as an Excel workbook.
 
-**7. edat_lfse_16 — Early leavers from education and training by NUTS-2 region** Link: [https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_16/default/table?lang=en](https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_16/default/table?lang=en) Purpose: Early school leavers (% of 18–24 year-olds). Rural and poorly connected regions consistently show higher dropout rates — Eurostat themselves note this pattern.
+| Local file | Eurostat source | Indicator used | Loader filter | Selected year |
+| --- | --- | --- | --- | --- |
+| `NUTS2021_urban_rural.xlsx` | [NUTS 2021 reference spreadsheet](https://ec.europa.eu/eurostat/documents/345175/629341/NUTS2021.xlsx) | NUTS-3 urban-rural typology | Sheet `Urban-rural`; categories 1, 2, 3 | NUTS 2021 |
+| `tran_r_net_linear_2_0.csv.gz` | [`tran_r_net`](https://ec.europa.eu/eurostat/databrowser/view/tran_r_net/default/table?lang=en) | Railway and motorway density | `tra_infr = RL` and `MWAY`; `unit = KM_TKM2` | 2024 |
+| `tran_r_vehst_linear_2_0.csv.gz` | [`tran_r_vehst`](https://ec.europa.eu/eurostat/databrowser/view/tran_r_vehst/default/table?lang=en) | Passenger cars per 1,000 inhabitants | `vehicle = CAR`; `unit = P_THAB` | 2024 |
+| `lfst_r_lfe2emprt_linear_2_0.csv.gz` | [`lfst_r_lfe2emprt`](https://ec.europa.eu/eurostat/databrowser/view/lfst_r_lfe2emprt/default/table?lang=en) | Employment rate | `age = Y20-64`; `sex = T`; `unit = PC` | 2024 |
+| `lfst_r_lfu3rt_linear_2_0.csv.gz` | [`lfst_r_lfu3rt`](https://ec.europa.eu/eurostat/databrowser/view/lfst_r_lfu3rt/default/table?lang=en) | Unemployment rate | `age = Y15-74`; `sex = T`; `isced11 = TOTAL`; `unit = PC` | 2024 |
+| `edat_lfse_04_linear_2_0.csv.gz` | [`edat_lfse_04`](https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_04/default/table?lang=en) | Tertiary attainment | `isced11 = ED5-8`; `age = Y25-34`; `sex = T` | 2024 |
+| `edat_lfse_16_linear_2_0.csv.gz` | [`edat_lfse_16`](https://ec.europa.eu/eurostat/databrowser/view/edat_lfse_16/default/table?lang=en) | Early school leavers | `age = Y18-24`; `sex = T` | 2019 |
+| `demo_r_mlifexp_linear_2_0.csv.gz` | [`demo_r_mlifexp`](https://ec.europa.eu/eurostat/databrowser/view/demo_r_mlifexp/default/table?lang=en) | Life expectancy at birth | `age = Y_LT1`; `sex = T`; `unit = YR` | 2024 |
+| `hlth_rs_prsrg_linear_2_0.csv.gz` | [`hlth_rs_prsrg`](https://ec.europa.eu/eurostat/databrowser/view/hlth_rs_prsrg/default/table?lang=en) | Medical doctors per 100,000 inhabitants | `isco08 = OC221`; `unit = P_HTHAB` | 2016 |
+| `nama_10r_2gdp_linear_2_0.csv.gz` | [`nama_10r_2gdp`](https://ec.europa.eu/eurostat/databrowser/view/nama_10r_2gdp/default/table?lang=en) | GDP per capita in PPS | `unit = PPS_EU27_2020_HAB` | 2024 |
 
-**8. demo_r_mlifexp — Life expectancy by age, sex and NUTS-2 region** Link: [https://ec.europa.eu/eurostat/databrowser/view/demo_r_mlifexp/default/map?lang=en](https://ec.europa.eu/eurostat/databrowser/view/demo_r_mlifexp/default/map?lang=en) Purpose: Life expectancy at birth by region. Your primary health outcome — regions with poor transport access tend to have lower life expectancy.
+For each numeric dataset, the loader selects the most recent year with at least 80% valid coverage among reporting EU-27 NUTS-2 regions. If no year meets that threshold, it uses the year with the most valid observations. The selected year is documented per metric because some topic tables combine two indicators from different source years.
 
-**9. hlth_rs_prsrg — Health personnel by NUTS-2 regions (historical, 1993–2021)** Link: [https://ec.europa.eu/eurostat/databrowser/product/view/HLTH_RS_PRSRG](https://ec.europa.eu/eurostat/databrowser/product/view/HLTH_RS_PRSRG) Purpose: Physicians per 100,000 inhabitants by region. Captures healthcare access — doctors cluster in urban centres, reinforcing the connectivity argument.
+## Typology Handling
+
+Eurostat supplies the urban-rural typology at NUTS-3 level. The site displays NUTS-2 indicators, so the loader assigns each NUTS-2 region a dominant typology based on the most common NUTS-3 category among its children. Ties are broken toward the more urban category.
+
+The current raw typology file uses NUTS 2021 boundaries. Some indicator files already contain NUTS 2024 regional codes, so the loader treats the NUTS 2021 typology as the regional universe and skips four-character codes that do not exist there. Current load result: 242 retained NUTS-2 regions.
+
+## Core Schema
+
+```text
+countries (1) ──< (many) nuts2_regions
+nuts2_regions (1) ──< (many) nuts3_regions
+nuts2_regions (1) ──< (many) transport_infrastructure
+nuts2_regions (1) ──< (many) employment_outcomes
+nuts2_regions (1) ──< (many) education_outcomes
+nuts2_regions (1) ──< (many) health_outcomes
+nuts2_regions (1) ──< (many) economic_outcomes
+```
+
+The runtime tracking module also creates `tracking_sessions`, `tracking_pageviews`, and `tracking_events`.
+
+## Stack
+
+- Backend: Python 3.13, Flask 3.x, raw SQLite3.
+- Data pipeline: pandas 3.x and openpyxl.
+- Frontend: Jinja templates, vanilla CSS/JS, Chart.js 4.x from CDN.
+- No ORM and no JavaScript build step.
+
+## Main Routes
+
+- `/` narrative landing page.
+- `/data` interactive data explorer.
+- `/methodology` data sources, cleaning notes, schema, and limitations.
+- `/about` project context and technical summary.
+- `/tracker` local usage dashboard.

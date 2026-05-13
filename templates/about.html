@@ -17,17 +17,18 @@
     <section class="prose-section">
         <h2>The argument</h2>
         <p>
-            <em>Where the Lines End</em> argues that public transport is the great equaliser
-            across the EU — or, more precisely, that its absence is the great divider.
-            Regions that sit further from urban centres and major transport corridors
-            systematically underperform on employment, health, and educational attainment.
+            <em>Where the Lines End</em> examines whether regional connectivity helps
+            explain why opportunity is distributed unevenly across the EU. It compares
+            transport infrastructure with employment, education, health, and income
+            indicators at NUTS-2 level, then asks where national averages hide large
+            internal differences.
         </p>
         <p>
-            The thesis is not that rural life is inherently worse, but that structural
-            under-investment in connectivity has created a compounding disadvantage for
-            peripheral regions. A region without good public transport cannot attract
-            firms, retain young graduates, or ensure that residents can reach hospitals
-            and job centres efficiently.
+            The thesis is not that rural life is inherently worse, or that railway density
+            alone explains regional inequality. The narrower claim is that peripheral
+            regions with thinner fixed transport infrastructure can face a practical access
+            disadvantage: jobs, universities, hospitals, and public services may exist in
+            the country, but not within easy reach.
         </p>
     </section>
 
@@ -36,7 +37,7 @@
         <p>
             The site is intentionally structured as a data journalism piece rather than
             an academic report. The landing page makes the argument in plain language;
-            the data page proves it with charts; the methodology page explains how the
+            the data page tests it with charts; the methodology page explains how the
             evidence was gathered and what its limits are.
         </p>
         <p>
@@ -59,18 +60,20 @@
                 <code>executemany</code> for insertion</li>
             <li><strong>Frontend:</strong> Vanilla HTML/CSS, Chart.js 4.x (CDN),
                 no JavaScript frameworks</li>
-            <li><strong>Data:</strong> Eurostat SDMX-CSV 2.0 (8 datasets, gzipped)</li>
-            <li><strong>Database:</strong> SQLite, 7 tables, foreign-key constraints</li>
+            <li><strong>Data:</strong> Eurostat SDMX-CSV 2.0 (9 gzipped datasets) plus
+                the NUTS 2021 urban-rural typology spreadsheet</li>
+            <li><strong>Database:</strong> SQLite, 8 core analytical tables, foreign-key constraints</li>
         </ul>
     </section>
 
     <section class="prose-section">
         <h2>Scope</h2>
         <p>
-            This is a student assignment (Stage II of three). The data covers all
-            27 EU member states at NUTS-2 regional level. Candidate countries
-            (e.g. Serbia, Ukraine) and UK post-Brexit data are excluded.
-            Greece uses the Eurostat country prefix "EL", not "GR".
+            This is a student assignment (Stage II of three). The analytical database
+            covers all 27 EU member states and retains 242 NUTS-2 regions after joining
+            the indicator files to the NUTS 2021 urban-rural typology. Candidate
+            countries and non-member countries are excluded. Greece uses the Eurostat
+            country prefix "EL", not "GR".
         </p>
     </section>
 

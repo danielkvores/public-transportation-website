@@ -1,6 +1,6 @@
 """
 create_db.py
-Creates the SQLite database and all 7 tables for "Where the Lines End".
+Creates the SQLite database and all 8 analytical tables for "Where the Lines End".
 Run this before load_data.py.
 """
 

@@ -303,14 +303,14 @@ function renderCountryChart(field) {
             makeVerticalLinePlugin("countryReferences", [
                 {
                     value: countryAvg,
-                    label: `country avg ${cfg.fmt(countryAvg)}`,
+                    label: `country mean ${cfg.fmt(countryAvg)}`,
                     color: SIGNAL,
                     dash: [],
                     offset: 14,
                 },
                 {
                     value: euAvg,
-                    label: `EU avg ${cfg.fmt(euAvg)}`,
+                    label: `EU mean ${cfg.fmt(euAvg)}`,
                     color: INK,
                     dash: [6, 4],
                     offset: 30,
@@ -379,7 +379,7 @@ function initCountryControls() {
             });
         } else {
             countryData = null;
-            setCountryMessage("Select a country to load its regional data");
+            setCountryMessage("Choose a country to begin");
         }
     });
 

@@ -18,13 +18,14 @@
     <section class="prose-section">
         <h2>Data sources</h2>
         <p>
-            All quantitative data comes from
+            All quantitative indicators come from
             <a href="https://ec.europa.eu/eurostat" target="_blank" rel="noopener">Eurostat</a>,
-            the statistical office of the European Union. Numerical datasets were
-            downloaded in <strong>SDMX-CSV 2.0 format</strong> (gzipped) from the
-            Eurostat bulk download facility, with the urban-rural classification
-            taken from the official NUTS 2021 reference spreadsheet. All raw files
-            are stored unmodified in <code>data/raw/</code>.
+            the statistical office of the European Union. The project uses nine
+            gzipped SDMX-CSV 2.0 datasets for transport, labour, education, health,
+            and economic indicators, plus the official NUTS 2021 urban-rural
+            typology spreadsheet. Raw files are stored unmodified in
+            <code>data/raw/</code>; the loader applies filters, selects the best
+            coverage year, and writes the cleaned values to SQLite.
         </p>
 
         <div class="dataset-grid">
@@ -34,7 +35,9 @@
                     <span class="dataset-card__label">{{ s.label }}</span>
                     <span class="dataset-card__year">{{ s.year }}</span>
                 </div>
-                <p class="dataset-card__source"><code>{{ s.source }}</code></p>
+                <p class="dataset-card__source">
+                    <a href="{{ s.source_url }}" target="_blank" rel="noopener"><code>{{ s.source }}</code></a>
+                </p>
                 <div class="dataset-card__stats">
                     <div>
                         <span class="ds-stat__val">{{ s.n }}</span>
@@ -59,28 +62,30 @@
         <h2>Scope and filtering</h2>
         <ul class="prose-list">
             <li>
-                <strong>Geographic unit:</strong> NUTS-2 regions (4-character Eurostat codes).
-                NUTS-0 (countries), NUTS-1, and NUTS-3 sub-regions are excluded from the
-                outcome tables. The 27 EU member states are included; candidate and
-                non-member countries are excluded. Greece uses the prefix "EL" per
-                Eurostat convention.
+                <strong>Geographic unit:</strong> the analysis table contains 242 retained
+                EU-27 NUTS-2 regions, identified by 4-character Eurostat codes. NUTS-0
+                countries, NUTS-1 macro-regions, NUTS-3 sub-regions, candidate countries,
+                and non-member countries are excluded from the outcome tables. Greece uses
+                the Eurostat country prefix "EL", not "GR".
             </li>
             <li>
                 <strong>Temporal scope:</strong> For each dataset, the most recent year
-                with at least 80% of EU-27 NUTS-2 regions reporting a valid value is
-                selected. If no year meets that threshold, the year with the most
-                observations is used.
+                with at least 80% valid coverage among reporting EU-27 NUTS-2 regions is
+                selected. If no year meets that threshold, the year with the most valid
+                observations is used. This gives 2024 for most indicators, 2019 for early
+                school leavers, and 2016 for physicians. Selected years are tracked per
+                metric because some database tables group two indicators from different
+                source years.
             </li>
             <li>
                 <strong>Value selection:</strong> Only rows with non-null
                 <code>OBS_VALUE</code> are kept. Missing values in Eurostat datasets
-                may indicate that a region is not classifiable under that typology,
-                or that data collection was incomplete.
+                are not imputed, converted to zero, or carried forward.
             </li>
             <li>
-                <strong>Annual frequency:</strong> Only <code>freq = "A"</code>
-                (annual) observations are used; quarterly or monthly breakdowns
-                are not considered.
+                <strong>Aggregation:</strong> averages shown in the charts are unweighted
+                regional means. They describe the average NUTS-2 region, not the average
+                EU resident.
             </li>
         </ul>
     </section>
@@ -176,15 +181,11 @@
                 comparable. Year used: 2024.
             </p>
             <p>
-                <strong>Workplace, not residence.</strong> Eurostat records GDP
-                where economic output is generated, not where workers live.
-                Capital regions like Île-de-France, Inner London (pre-Brexit),
-                and Luxembourg therefore appear far wealthier than their resident
-                populations are, because commuters from neighbouring regions
-                contribute to the headline number. This is a feature of the data,
-                not a bug, and it actually reinforces the connectivity argument:
-                rural workers can only access high-productivity urban jobs if
-                they can physically reach them.
+                <strong>Workplace, not residence.</strong> Regional GDP is assigned where
+                economic output is generated. Capital and major employment regions can
+                therefore look wealthier than the income of their resident population
+                alone would suggest, because commuters from neighbouring regions
+                contribute to the output measured there.
             </p>
         </div>
     </section>
@@ -204,43 +205,41 @@
         <ul class="prose-list">
             <li>
                 <strong>Predominantly urban:</strong> at least 80% of the population
-                lives in urban grid cells.
+                lives in urban clusters.
             </li>
             <li>
-                <strong>Intermediate:</strong> between 50% and 80% urban population.
+                <strong>Intermediate:</strong> more than 50% but less than 80% of the
+                population lives in urban clusters.
             </li>
             <li>
-                <strong>Predominantly rural:</strong> more than half of the population
-                lives in rural grid cells.
+                <strong>Predominantly rural:</strong> at least 50% of the population lives
+                in rural grid cells.
             </li>
         </ul>
         <p>
-            All outcome data in this project (employment, education, health,
-            transport) is reported at NUTS-2 level, while the typology lives at
-            NUTS-3. To bring them onto the same axis, each NUTS-2 region is
-            assigned a <strong>dominant typology</strong> equal to the most
-            common category among its NUTS-3 children. Ties are broken in favour
-            of the more-urban category — a NUTS-2 region with equal urban and
-            rural NUTS-3 children is labelled urban on the grounds that the
-            anchor city dominates regional outcomes.
+            The indicators used in this project are reported at NUTS-2 level, while the
+            typology is supplied at NUTS-3 level. To bring them onto the same axis, each
+            NUTS-2 region is assigned a <strong>dominant typology</strong> equal to the
+            most common category among its NUTS-3 children. This is a count-based
+            majority roll-up, not a population-weighted roll-up. Ties are broken in favour
+            of the more-urban category.
         </p>
         <p>
             The dominant typology is computed once at load time and stored as a
             denormalised <code>urban_rural_typology</code> column on
             <code>nuts2_regions</code>, alongside the full per-NUTS-3 table. This
-            preserves the proper one-to-many relational structure
-            (1 NUTS-2 → many NUTS-3, 242 NUTS-2 parents covering 1,166 NUTS-3
-            regions in EU-27) while keeping dashboard queries simple.
+            preserves the one-to-many relational structure
+            (1 NUTS-2 → many NUTS-3, 242 retained NUTS-2 parents covering 1,166
+            EU-27 NUTS-3 regions) while keeping dashboard queries simple.
         </p>
         <div class="callout callout--warning">
             <strong>Boundary version mismatch.</strong>
-            The typology spreadsheet uses NUTS 2021 boundaries; some Eurostat
-            datasets we consume already use NUTS 2024. Seven NUTS-2 codes
-            (notably new Dutch and Portuguese subdivisions) appear in the 2024
-            data but have no published NUTS 2021 typology. These regions, plus
-            extra-regio &ldquo;ZZ&rdquo; aggregate codes, are dropped during the
-            load step (65 codes total). Eurostat has not yet published a
-            machine-readable NUTS 2024 typology.
+            The current project data uses the NUTS 2021 typology file, while several
+            Eurostat indicator files already contain NUTS 2024 regional codes. The loader
+            treats the NUTS 2021 typology as the regional universe: any four-character
+            code not present there is skipped before insertion. In the current load, 65
+            such codes are dropped and 242 NUTS-2 regions remain. Updating the raw
+            typology source to NUTS 2024 would be the next maintenance step.
         </div>
     </section>
 
@@ -249,8 +248,10 @@
         <h2>Database design</h2>
         <p>
             Data is stored in a SQLite relational database
-            (<code>database/the_15_minute_divide.db</code>) with 7 tables and
-            foreign-key constraints. Raw SQLite3 is used throughout — no ORM.
+            (<code>database/the_15_minute_divide.db</code>) with 8 core analytical
+            tables and foreign-key constraints. Raw SQLite3 is used throughout — no ORM.
+            The runtime also creates three tracking tables for page-view analytics; those
+            are separate from the Eurostat analytical schema.
         </p>
         <div class="erd-box">
             <pre class="erd">
@@ -260,6 +261,7 @@ nuts2_regions (1) ──&lt; (many) transport_infrastructure
 nuts2_regions (1) ──&lt; (many) employment_outcomes
 nuts2_regions (1) ──&lt; (many) education_outcomes
 nuts2_regions (1) ──&lt; (many) health_outcomes
+nuts2_regions (1) ──&lt; (many) economic_outcomes
             </pre>
         </div>
         <p>
@@ -280,20 +282,25 @@ nuts2_regions (1) ──&lt; (many) health_outcomes
                 rather than a cause of better outcomes.
             </li>
             <li>
-                <strong>Cross-country comparability.</strong> Raw indicators are not
-                z-score normalised across countries. A Dutch baseline and a Bulgarian
-                baseline are structurally different. Country-level charts are provided
-                for within-country comparison.
+                <strong>Cross-country comparability.</strong> Indicators are not
+                z-score normalised across countries. GDP is purchasing-power adjusted,
+                but institutional systems, settlement patterns, and national baselines
+                still differ.
             </li>
             <li>
                 <strong>Temporal mismatch.</strong> Indicators come from different years
                 (2016–2024). Causal inferences across time are not intended.
             </li>
             <li>
-                <strong>Proxy typology.</strong> The urban-rural classification is
-                employment-derived, not the official Eurostat NUTS-3 typology.
-                Capital-city regions are hardcoded as urban; remaining regions are
-                classified by tertile.
+                <strong>Typology roll-up.</strong> Eurostat supplies the urban-rural
+                typology at NUTS-3 level. The NUTS-2 label used in charts is a derived
+                dominant category, so mixed regions are simplified into one label.
+            </li>
+            <li>
+                <strong>Railway density proxy.</strong> Railway density measures kilometres
+                of railway line per 1,000 km². It does not measure service frequency,
+                journey time, affordability, reliability, or whether stations are usable
+                for the people living nearby.
             </li>
             <li>
                 <strong>Missing data.</strong> Not all NUTS-2 regions have data for
@@ -307,12 +314,11 @@ nuts2_regions (1) ──&lt; (many) health_outcomes
     <section class="prose-section">
         <h2>AI disclosure</h2>
         <p>
-            Claude (Anthropic) was used as a coding assistant for this project.
-            Its contributions included: structuring the data pipeline, writing
-            and debugging Python cleaning scripts, drafting Flask routes, and
-            scaffolding the HTML/CSS templates. All data sourcing decisions,
-            methodological choices, and written analysis are the author's own.
-            The AI was not used to generate or fabricate any data values.
+            AI coding assistants were used while building and revising this project.
+            Assistance included structuring the data pipeline, debugging cleaning scripts,
+            drafting Flask routes, and editing HTML/CSS templates. Data values come only
+            from the raw Eurostat files loaded into SQLite; AI was not used to generate,
+            estimate, or fabricate observations.
         </p>
     </section>
 
